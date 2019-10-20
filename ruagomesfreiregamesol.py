@@ -6,14 +6,21 @@ import time
 class SearchProblem:
 
   def __init__(self, goal, model, auxheur = []):
-    ##
-    ## to implement
-    ##  
+    self.goal = goal
+    self.model = model 
+    self.auxheur = auxheur 
     pass
+
+  def search(self, init, limitexp = 2000):
+    g_cost = 0
+
+
+  
 
   def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
     ##
     ## to implement
     return []
 
-    
+
+
