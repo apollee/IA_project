@@ -135,4 +135,3 @@ print("\n(4 val) Exercise 5 - Three agents, Limits, Any-Order")
 tendtotal = time.process_time()
 print("Total time %.1fms"%((tendtotal-tinittotal)*1000))
 
-
