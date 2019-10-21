@@ -29,15 +29,15 @@ def plotpath(P,coords):
         plt.show()
         
 def validatepath(oP,oI,U,tickets=[25,25,25]): 
-        print(oP)
+        #print(oP)
         if not oP:
                 return False
         P = copy.deepcopy(oP)
         I = copy.copy(oI)
         mtickets = copy.copy(tickets)
 
-        print(I)
-        print(P[0][1])
+        #print(I)
+        #print(P[0][1])
         if I!=P[0][1]:
                 print('path does not start in the initial state')
                 return False
@@ -65,7 +65,7 @@ def validatepath(oP,oI,U,tickets=[25,25,25]):
                         print(tt)
                         print('there is more than one police in the same location')
                         return False
-        print(oP)
+        #print(oP)
         return True
 
 tinittotal = time.process_time()

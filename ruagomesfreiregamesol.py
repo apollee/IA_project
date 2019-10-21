@@ -23,8 +23,8 @@ class SearchProblem:
 
 	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
 		node_list = self.createNodes()
-		self.BFS(init, self.goal, self.model, node_list)
-		return []
+		return self.BFS(init, self.goal, self.model, node_list)
+		#return []
 
 	def createNodes(self):
 		node_list = []
@@ -56,16 +56,18 @@ class SearchProblem:
 
 		while queue:
 			vertex = queue.pop(0) #node
-			for neighbour in self.getSucessors(vertex.index):			
-				if(neighbour == goal[0]):
-					node_list[neighbour].setFather(vertex) #set father index
-					return self.traceBack(node_list[neighbour])
+			for neighbour in self.getInfoSucessors(vertex.index):			
+				if(neighbour[1] == goal[0]):
+					node_list[neighbour[1]].setFather(vertex) #set father index
+					node_list[neighbour[1]].setTransport(neighbour[0])
+					return self.traceBack(node_list[neighbour[1]])
 
 				else:
-					if not (node_list[neighbour].visited):
-						node_list[neighbour].setFather(vertex) #set father index
-						node_list[neighbour].setVisited()
-						queue.append(node_list[neighbour])
+					if not (node_list[neighbour[1]].visited):
+						node_list[neighbour[1]].setFather(vertex) #set father index
+						node_list[neighbour[1]].setTransport(neighbour[0])
+						node_list[neighbour[1]].setVisited()
+						queue.append(node_list[neighbour[1]])
 		
 	def traceBack(self, node):
 		list = []
@@ -76,12 +78,37 @@ class SearchProblem:
 			list.insert(0, current_father)
 			current_father = current_father.getFather() 
 		
-		self.printList(list)
+		#self.printList(list)
+		return self.createAnswer(list)
 		
 
 	def printList(self, list):
 		for i in range(len(list)):
 			print("My number is " + str(list[i].index))
+			print("and my transport is " + str(list[i].transport))
+	
+	def createAnswer(self, list):
+		final_list = []
+		final_list.append(self.start_node_answer(list)) #first node
+
+		for i in range(1, len(list)):
+			list_node_transport, list_node_index, list_path = ([] for i in range(3))
+			transport = list[i].transport
+			list_node_transport.append(list[i].transport)
+			list_node_index.append(list[i].index)
+			list_path.append(list_node_transport)
+			list_path.append(list_node_index)
+			final_list.append(list_path)
+		
+		return final_list
+	
+	#auxiliary function
+	def start_node_answer(self, list):
+		list_node_transport, list_node_index, list_path = ([] for i in range(3))
+		list_node_index.append(list[0].index)
+		list_path.append(list_node_transport)
+		list_path.append(list_node_index)
+		return list_path
 		
 
 class Node:
@@ -89,6 +116,7 @@ class Node:
 		self.index = index
 		self.father = father
 		self.visited = visited
+		self.transport = None
 	
 	def getFather(self):
 		return self.father
@@ -102,6 +130,8 @@ class Node:
 	def setVisited(self):
 		self.visited = 1
 	
+	def setTransport(self, number):
+		self.transport = number
 	
 
 
