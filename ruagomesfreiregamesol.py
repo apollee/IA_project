@@ -22,6 +22,8 @@ class SearchProblem:
 		g_cost = 0 
 
 	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
+		node_list = self.createNodes()
+		self.BFS(init, self.goal, self.model, node_list)
 		return []
 
 	def createNodes(self):
@@ -37,20 +39,49 @@ class SearchProblem:
 	def getTransport(self, index):
 		pass
 	
-	def getSucessors(self, index): #[[transport, sucesssors]*]
+	def getInfoSucessors(self, index): #[[transport, sucesssors]*]
 		return self.model[index]
 
-	def BFS(init, goal, model, node_list):
+	def getSucessors(self, index):
+		list = []
+		for i in range(len(self.model[index])):
+			list.append(self.model[index][i][1])
+		
+		return list
+
+	def BFS(self, init, goal, model, node_list):
 		queue = []
 		node_list[init[0]].setVisited() #set first node as visited
 		queue.append(node_list[init[0]])
 
 		while queue:
 			vertex = queue.pop(0) #node
-			for neighbour in self.getSucessors(vertex.getIndex())
-				if not (node_list[neighbour[1]].isVisited()):
-					node_list[neighbour[1]].setVisited()
-					queue.append(node_list[neighbour[1]])
+			for neighbour in self.getSucessors(vertex.index):			
+				if(neighbour == goal[0]):
+					node_list[neighbour].setFather(vertex) #set father index
+					return self.traceBack(node_list[neighbour])
+
+				else:
+					if not (node_list[neighbour].visited):
+						node_list[neighbour].setFather(vertex) #set father index
+						node_list[neighbour].setVisited()
+						queue.append(node_list[neighbour])
+		
+	def traceBack(self, node):
+		list = []
+		list.insert(0, node)
+
+		current_father = node.getFather()
+		while(current_father != None):
+			list.insert(0, current_father)
+			current_father = current_father.getFather() 
+		
+		self.printList(list)
+		
+
+	def printList(self, list):
+		for i in range(len(list)):
+			print("My number is " + str(list[i].index))
 		
 
 class Node:
@@ -64,9 +95,6 @@ class Node:
 
 	def getIndex(self):
 		return self.index
-
-	def isVisited(self):
-		return self.visited
 
 	def setFather(self, father):
 		self.father = father
