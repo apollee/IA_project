@@ -23,7 +23,7 @@ class SearchProblem:
 
 	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
 		node_list = self.createNodes()
-		return self.BFS(init, self.goal, self.model, node_list)
+		return self.BFS(init, self.goal, self.model, node_list, tickets)
 		#return []
 
 	def createNodes(self):
@@ -49,14 +49,13 @@ class SearchProblem:
 		
 		return list
 
-	def BFS(self, init, goal, model, node_list):
+	def BFS(self, init, goal, model, node_list, tickets):
 		queue = []
 		node_list[init[0]].setVisited() #set first node as visited
 		queue.append(node_list[init[0]])
-
 		while queue:
 			vertex = queue.pop(0) #node
-			for neighbour in self.getInfoSucessors(vertex.index):			
+			for neighbour in self.getInfoSucessors(vertex.index):
 				if(neighbour[1] == goal[0]):
 					node_list[neighbour[1]].setFather(vertex) #set father index
 					node_list[neighbour[1]].setTransport(neighbour[0])
@@ -78,38 +77,21 @@ class SearchProblem:
 			list.insert(0, current_father)
 			current_father = current_father.getFather() 
 		
-		#self.printList(list)
 		return self.createAnswer(list)
 		
-
-	def printList(self, list):
-		for i in range(len(list)):
-			print("My number is " + str(list[i].index))
-			print("and my transport is " + str(list[i].transport))
-	
 	def createAnswer(self, list):
 		final_list = []
-		final_list.append(self.start_node_answer(list)) #first node
+		final_list.append(self.start_node_answer(list))
 
 		for i in range(1, len(list)):
-			list_node_transport, list_node_index, list_path = ([] for i in range(3))
-			transport = list[i].transport
-			list_node_transport.append(list[i].transport)
-			list_node_index.append(list[i].index)
-			list_path.append(list_node_transport)
-			list_path.append(list_node_index)
-			final_list.append(list_path)
-		
+			final_list.append([[list[i].transport], [list[i].index]])
+
 		return final_list
 	
-	#auxiliary function
+	#auxiliary functions
 	def start_node_answer(self, list):
-		list_node_transport, list_node_index, list_path = ([] for i in range(3))
-		list_node_index.append(list[0].index)
-		list_path.append(list_node_transport)
-		list_path.append(list_node_index)
-		return list_path
-		
+		return [[], [list[0].index]]
+
 
 class Node:
 	def __init__(self, index, father, visited):

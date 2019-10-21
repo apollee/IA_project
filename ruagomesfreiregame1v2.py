@@ -29,15 +29,15 @@ def plotpath(P,coords):
         plt.show()
         
 def validatepath(oP,oI,U,tickets=[25,25,25]): 
-        #print(oP)
+        print(oP)
         if not oP:
                 return False
         P = copy.deepcopy(oP)
         I = copy.copy(oI)
         mtickets = copy.copy(tickets)
 
-        #print(I)
-        #print(P[0][1])
+        print(I)
+        print(P[0][1])
         if I!=P[0][1]:
                 print('path does not start in the initial state')
                 return False
@@ -85,7 +85,8 @@ if validatepath(nn,I,U):
 else:
         print("invalid path")
 
-"""print("\n(4 val) Exercise 2 - One agent, Limits")
+"""
+print("\n(4 val) Exercise 2 - One agent, Limits")
 print("Init [30] Goal [56]")
 SP = SearchProblem(goal = [56], model = U, auxheur=coords)
 tinit = time.process_time()
