@@ -9,6 +9,7 @@ class SearchProblem:
 		self.goal = goal
 		self.model = model 
 		self.auxheur = auxheur 
+		self.createNodes()
 		pass
 
 	def getCoords(self, index):
@@ -17,54 +18,69 @@ class SearchProblem:
 	def getAdjs(self, index):
 		return self.model[index]
 
-
 	def search(self, init, limitexp = 2000):
 		g_cost = 0 
-		self.a_star(init)
 
 	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
-		self.a_star(init)
 		return []
 
-	def a_star(self, init):
-		openList = self.openListInit(init)
-		closeList = self.closeList()
-		#goalList = self.goalListInit()
+	def createNodes(self):
+		node_list = []
+		for i in range(0, 114):
+			node_list.append(Node(i, None, 0))
+		
+		return node_list
+	
+	def getNode(self, index):
+		return node_list[index]
+	
+	def getTransport(self, index):
+		pass
+	
+	def getSucessors(self, index): #[[transport, sucesssors]*]
+		return self.model[index]
 
+	def BFS(init, goal, model, node_list):
+		queue = []
+		node_list[init[0]].setVisited() #set first node as visited
+		queue.append(node_list[init[0]])
 
-
-
-
-	def openListInit(self, init):
-		openList = []
-		for i in range(len(init)):
-			openList += [Node(init[i], None, 0, 0)]
-		return openList
-
-	def closedListInit(self, init):
-		closedList = [[[],init]]
-		return closedList
-
-	def goalListInit(self):
-		goalList = []
-		for i in range(len(self.goal)):
-			goalList += [Node(goal[i], None, 0, 0)]
-		return goalList
-
+		while queue:
+			vertex = queue.pop(0) #node
+			for neighbour in self.getSucessors(vertex.getIndex())
+				if not (node_list[neighbour[1]].isVisited()):
+					node_list[neighbour[1]].setVisited()
+					queue.append(node_list[neighbour[1]])
+		
 
 class Node:
-	def __init__(self, index, father, g, h):
-		self.father = father;
-		self.g = g
-		self.h = h
-		self.f = g + h 
+	def __init__(self, index, father, visited):
 		self.index = index
+		self.father = father
+		self.visited = visited
 	
 	def getFather(self):
 		return self.father
 
 	def getIndex(self):
 		return self.index
+
+	def isVisited(self):
+		return self.visited
+
+	def setFather(self, father):
+		self.father = father
+	
+	def setVisited(self):
+		self.visited = 1
+	
+	
+
+
+
+
+
+
 
 
 
