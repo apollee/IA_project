@@ -60,8 +60,8 @@ class SearchProblem:
 					node_list[neighbour[1]].setFather(vertex) #set father index
 					node_list[neighbour[1]].setTransport(neighbour[0])
 					try_list = self.traceBack(node_list[neighbour[1]], tickets)
-					#if(try_list != []):
-					#	return try_list
+					if(try_list != []):
+						return try_list
 
 				else:
 					if not (node_list[neighbour[1]].visited):
@@ -84,10 +84,8 @@ class SearchProblem:
 		
 		for i in range(0,3):
 			if(tickets_copy[i] < 0):
-				print(self.createAnswer(list))
 				return []
 		
-		print(self.createAnswer(list))
 		return self.createAnswer(list)
 		
 	def createAnswer(self, list):
