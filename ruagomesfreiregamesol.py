@@ -59,7 +59,9 @@ class SearchProblem:
 				if(neighbour[1] == goal[0]):
 					node_list[neighbour[1]].setFather(vertex) #set father index
 					node_list[neighbour[1]].setTransport(neighbour[0])
-					return self.traceBack(node_list[neighbour[1]])
+					try_list = self.traceBack(node_list[neighbour[1]], tickets)
+					#if(try_list != []):
+					#	return try_list
 
 				else:
 					if not (node_list[neighbour[1]].visited):
@@ -68,15 +70,24 @@ class SearchProblem:
 						node_list[neighbour[1]].setVisited()
 						queue.append(node_list[neighbour[1]])
 		
-	def traceBack(self, node):
+	def traceBack(self, node, tickets):
 		list = []
 		list.insert(0, node)
+		tickets_copy = tickets.copy()
 
 		current_father = node.getFather()
+		transport = node.getTransport()
 		while(current_father != None):
+			tickets_copy = self.reduce_tickets(tickets_copy, transport)
 			list.insert(0, current_father)
 			current_father = current_father.getFather() 
 		
+		for i in range(0,3):
+			if(tickets_copy[i] < 0):
+				print(self.createAnswer(list))
+				return []
+		
+		print(self.createAnswer(list))
 		return self.createAnswer(list)
 		
 	def createAnswer(self, list):
@@ -92,6 +103,15 @@ class SearchProblem:
 	def start_node_answer(self, list):
 		return [[], [list[0].index]]
 
+	def reduce_tickets(self, tickets, transport):	
+		if(transport == 0):
+			tickets[0] -= 1
+		elif(transport == 1):
+			tickets[1] -= 1
+		else:
+			tickets[2] -= 1
+		
+		return tickets
 
 class Node:
 	def __init__(self, index, father, visited):
@@ -105,6 +125,9 @@ class Node:
 
 	def getIndex(self):
 		return self.index
+	
+	def getTransport(self):
+		return self.transport
 
 	def setFather(self, father):
 		self.father = father
