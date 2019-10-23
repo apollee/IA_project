@@ -1,6 +1,8 @@
+
 import math
 import pickle
 import time
+import heapq
 
   
 class SearchProblem:
@@ -9,7 +11,7 @@ class SearchProblem:
 		self.goal = goal
 		self.model = model 
 		self.auxheur = auxheur 
-		self.createNodes()
+		#self.createNodes()
 		pass
 
 	def getCoords(self, index):
@@ -22,72 +24,9 @@ class SearchProblem:
 		g_cost = 0 
 
 	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
-		node_list = self.createNodes()
-		return self.BFS(init, self.goal, self.model, node_list, tickets)
-		#return []
+		return self.a_star(init, self.model, self.goal, tickets)
+		return []
 
-	def createNodes(self):
-		node_list = []
-		for i in range(0, 114):
-			node_list.append(Node(i, None, 0))
-		
-		return node_list
-	
-	def getNode(self, index):
-		return node_list[index]
-	
-	def getTransport(self, index):
-		pass
-	
-	def getInfoSucessors(self, index): #[[transport, sucesssors]*]
-		return self.model[index]
-
-	def getSucessors(self, index):
-		list = []
-		for i in range(len(self.model[index])):
-			list.append(self.model[index][i][1])
-		
-		return list
-
-	def BFS(self, init, goal, model, node_list, tickets):
-		queue = []
-		node_list[init[0]].setVisited() #set first node as visited
-		queue.append(node_list[init[0]])
-		while queue:
-			vertex = queue.pop(0) #node
-			for neighbour in self.getInfoSucessors(vertex.index):
-				if(neighbour[1] == goal[0]):
-					node_list[neighbour[1]].setFather(vertex) #set father index
-					node_list[neighbour[1]].setTransport(neighbour[0])
-					try_list = self.traceBack(node_list[neighbour[1]], tickets)
-					if(try_list != []):
-						return try_list
-
-				else:
-					if not (node_list[neighbour[1]].visited):
-						node_list[neighbour[1]].setFather(vertex) #set father index
-						node_list[neighbour[1]].setTransport(neighbour[0])
-						node_list[neighbour[1]].setVisited()
-						queue.append(node_list[neighbour[1]])
-		
-	def traceBack(self, node, tickets):
-		list = []
-		list.insert(0, node)
-		tickets_copy = tickets.copy()
-
-		current_father = node.getFather()
-		transport = node.getTransport()
-		while(current_father != None):
-			tickets_copy = self.reduce_tickets(tickets_copy, transport)
-			list.insert(0, current_father)
-			current_father = current_father.getFather() 
-		
-		for i in range(0,3):
-			if(tickets_copy[i] < 0):
-				return []
-		
-		return self.createAnswer(list)
-		
 	def createAnswer(self, list):
 		final_list = []
 		final_list.append(self.start_node_answer(list))
@@ -97,52 +36,112 @@ class SearchProblem:
 
 		return final_list
 	
+	def createNodes(self):
+		node_list = []
+		for i in range(0, 114):
+			node_list.append(Node(i, None, 0, 0))
+		
+		return node_list
+	
 	#auxiliary functions
 	def start_node_answer(self, list):
 		return [[], [list[0].index]]
 
-	def reduce_tickets(self, tickets, transport):	
-		if(transport == 0):
-			tickets[0] -= 1
-		elif(transport == 1):
-			tickets[1] -= 1
-		else:
-			tickets[2] -= 1
+	def a_star(self, init, model, goal, tickets):
+		goal = goal[0]
+		init = init[0]
 		
-		return tickets
+		openset = set()
+		closedset = set()
+		current = Node([[], init], None, tickets)
+		openset.add(current)
+
+		while openset:
+
+			min = 1000
+			for node in openset: 
+				value = node.g + self.heuristic(goal, node)
+				if(value < min):
+					min = value
+					current = node
+
+			if current.transport_index[1] == goal:
+				path = []
+				while current.father:
+					path.append(current.transport_index)
+					current = current.father
+				path.append(current.transport_index)
+				return path[::-1]
+		
+			openset.remove(current)
+			#closedset.add(current)
+			for node in self.neighbors(current.transport_index[1]):
+				node = Node(node, current, current.tickets)
+				node.reduceTickets(node.transport_index[0])
+				if(node.tickets[node.transport_index[0]] < 0):
+					continue
+				#if node in closedset:
+				#	continue
+				if node in openset:
+					new_g = current.g + 1
+					if node.g > new_g:
+						node.g = new_g
+						node.father = current
+				else:
+					node.g = current.g + 1
+					node.h = self.heuristic(goal, node)
+					node.father = current
+					openset.add(node)
+
+	def heuristic(self, goal, node):
+
+		h2 = self.calculateH2(node.transport_index[0])
+		h3 = self.calculateH3(goal, node.transport_index[1])
+
+		return h2 + h3
+
+	def calculateH2(self, node):
+		if(node == 0): 
+			return 3
+		elif(node == 1):
+			return 2
+		else:
+			return 1
+	
+	def calculateH3(self, goal, node):
+		x1 = self.auxheur[node - 1][0]
+		x2 = self.auxheur[goal - 1][0]
+		y1 = self.auxheur[node - 1][1]
+		y2 = self.auxheur[goal - 1][1]
+		return math.sqrt((x2 - x1)**2 + (y2-y1)**2) / 120
+	
+	def neighbors(self, index):
+		return self.model[index] 
 
 class Node:
-	def __init__(self, index, father, visited):
-		self.index = index
+	def __init__(self, transport_index, father, tickets):
+		self.transport_index = transport_index
 		self.father = father
-		self.visited = visited
-		self.transport = None
-	
+		self.tickets = tickets.copy()
+		
+		self.g = 0
+		self.h = 0
+		self.f = 0
+		
 	def getFather(self):
 		return self.father
 
 	def getIndex(self):
 		return self.index
+		
+	def getG(self):
+		return self.g
+		
+	def getH(self):
+		return self.h 
 	
-	def getTransport(self):
-		return self.transport
-
-	def setFather(self, father):
-		self.father = father
+	def getF(self):
+		return self.f
 	
-	def setVisited(self):
-		self.visited = 1
-	
-	def setTransport(self, number):
-		self.transport = number
-	
-
-
-
-
-
-
-
-
-
-
+	def reduceTickets(self, transport):
+		self.tickets[transport] -= 1
