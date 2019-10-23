@@ -28,13 +28,28 @@ class SearchProblem:
 		return []
 
 	def createAnswer(self, list):
-		final_list = []
-		final_list.append(self.start_node_answer(list))
+		path = []
+		while currents[0].father:
+			transports = []
+			indexs = []
+			joint = []
+			for i in range(len(currents)):
+				transports.append(currents[i].transport_index[0])
+				indexs.append(currents[i].transport_index[1])
+				joint.append(transports)
+				joint.append(indexs)
+				currents[i] = currents[i].father
+				path.append(joint)
+			transports = []
+			indexs = []
+			joint = []
+			transports.append(currents[i].transport_index[0])
+			indexs.append(currents[i].transport_index[1])
+			joint.append(transports)
+			joint.append(indexs)
+			path.append(joint)
 
-		for i in range(1, len(list)):
-			final_list.append([[list[i].transport], [list[i].index]])
-
-		return final_list
+		return path
 	
 	def createNodes(self):
 		node_list = []
@@ -48,50 +63,59 @@ class SearchProblem:
 		return [[], [list[0].index]]
 
 	def a_star(self, init, model, goal, tickets):
-		goal = goal[0]
-		init = init[0]
 		
-		openset = set()
-		closedset = set()
-		current = Node([[], init], None, tickets)
-		openset.add(current)
+		openset = []
+		currents = []
+		for i in range(len(init)):
+			currents.append(Node([[], init[i]], None, tickets))
+		
+		openset.append(currents)
 
 		while openset:
-
 			min = 1000
-			for node in openset: 
-				value = node.g + self.heuristic(goal, node)
-				if(value < min):
-					min = value
-					current = node
+			for node in openset:  #[[no, no, no],*]
+				for i in range(len(node)):	
+					value_f = node[i].g + self.heuristic(goal[i], node[i])
+					if(value_f < min):
+						min = value_f
+						currents[i] = node[i]
 
-			if current.transport_index[1] == goal:
-				path = []
-				while current.father:
-					path.append(current.transport_index)
-					current = current.father
-				path.append(current.transport_index)
+			
+			flag_all_goal = 1
+			for i in range(len(currents)):
+				if currents[i].transport_index[1] != goal[i]:
+					flag_all_goal = 0
+					break
+			
+			if(flag_all_goal):
+				self.createAnswer(currents)
 				return path[::-1]
 		
-			openset.remove(current)
-			#closedset.add(current)
-			for node in self.neighbors(current.transport_index[1]):
-				node = Node(node, current, current.tickets)
-				node.reduceTickets(node.transport_index[0])
-				if(node.tickets[node.transport_index[0]] < 0):
-					continue
-				#if node in closedset:
-				#	continue
-				if node in openset:
-					new_g = current.g + 1
-					if node.g > new_g:
-						node.g = new_g
-						node.father = current
-				else:
-					node.g = current.g + 1
-					node.h = self.heuristic(goal, node)
-					node.father = current
-					openset.add(node)
+			openset.remove(currents)
+			for i in range(len(currents)):
+				for node in self.neighbors(currents[i].transport_index[1]):
+					node = Node(node, currents[i], currents[i].tickets)
+					node.reduceTickets(node.transport_index[0])
+					if(node.tickets[node.transport_index[0]] < 0):
+						continue
+					flag = 0
+					print(openset)
+					for j in range(len(openset)):
+						if openset[j][i].transport_index[1] == node.transport_index[1]:
+							flag = 1
+							break
+					
+					if flag:
+						new_g = currents[i].g + 1
+						if node.g > new_g:
+							node.g = new_g
+							node.father = currents[i]
+					else:
+						node.g = currents[i].g + 1
+						node.h = self.heuristic(goal[i], node)
+						node.father = currents[i]
+						node_list = [node]
+						openset.append(node_list)
 
 	def heuristic(self, goal, node):
 
@@ -127,7 +151,10 @@ class Node:
 		self.g = 0
 		self.h = 0
 		self.f = 0
-		
+
+	def __repr__(self):
+		return str(self.transport_index[1])
+
 	def getFather(self):
 		return self.father
 
