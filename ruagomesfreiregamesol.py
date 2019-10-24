@@ -22,97 +22,57 @@ class SearchProblem:
 	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
 		
 		if(len(init) == 1):
-			return self.a_star_1_2(init, self.model, self.goal, tickets)
+			print("not doing it rn")
+			#return self.a_star_3_4(init, self.model, self.goal, tickets, self.matrix, limitdepth)
 		elif(len(init) == 3):
-			return self.a_star_3_4(init, self.model, self.goal, tickets, self.matrix)
+			return self.a_star_3_4(init, self.model, self.goal, tickets, self.matrix, limitdepth)
 		else:
 			return []
 
-	def a_star_1_2(self, init, model, goal, tickets):
-		goal = goal[0]
-		init = init[0]
-		
-		openset = set()
-		closedset = set()
-		current = Node([[], init], None, tickets)
-		openset.add(current)
+	def a_star_3_4(self, init, model, goal, tickets, matrix, max_depth):
+		depth_to_explore = max(matrix[init[i]][goal[i]] for i in range(len(init))) #allow more than one cop
 
-		while openset:
-			min = 1000
-			for node in openset: 
-				value = node.g + self.heuristic(goal, node)
-				if(value < min):
-					min = value
-					current = node
-
-			if current.getIndex() == goal:
-				path = []
-				while current.getFather():
-					path.append(current.transport_index)
-					current = current.getFather()
-				path.append(current.transport_index)
-				print(path[::-1])
-				return path[::-1]
-		
-			openset.remove(current)
-			for node in self.neighbors(current.getIndex()):
-				node = Node(node, current, current.tickets)
-				node.reduceTickets(node.getTransport())
-				if(node.tickets[node.getTransport()] < 0):
-					continue
-				if node in openset:
-					new_g = current.g + 1
-					if node.g > new_g:
-						node.g = new_g
-						node.setFather(current)
-				else:
-					node.g = current.g + 1
-					node.h = self.heuristic(goal, node)
-					node.setFather(current)
-					openset.add(node)
-
-	def a_star_3_4(self, init, model, goal, tickets, matrix):
-		maxDistance = max(matrix[init[0]][goal[0]], matrix[init[1]][goal[1]], matrix[init[2]][goal[2]])
-		#for em volta disto!!!
-
-		while maxDistance < 10:
-			copspathList = []
+		while depth_to_explore < max_depth:
+			cops_path = []
 			for i in range(len(init)):
-				copspathList.append((self.calculatePath(maxDistance-1, init[i], goal[i], tickets)))
-			flag = 1
-			for cop in copspathList:
-				if(cop == []):
-					flag = 0
-					maxDistance += 1
-					break
-			if flag:
-				lst = self.detectCollisions(copspathList, tickets)
-				if lst != []:
-					List = self.createAnswer(lst)
-					return List
-				else:
-					maxDistance += 1
+				cops_path.append((self.calculatePath(depth_to_explore-1, init[i], goal[i], tickets)))
+			
+			#check if there is a valid solution with current_node depth
+			if [] not in cops_path:
+				solution_path = self.detectCollisions(cops_path, tickets)
+				if len(solution_path) > 0: #found valid solution
+					return self.createAnswer(solution_path)
+			
+			#increase depth if no solution found
+			depth_to_explore += 1
+		
 		return []
 	
 	def calculatePath(self, maxDistance, init, goal, tickets):
-		current = Node([[], init], None, tickets)
-		openset = list()
-		openset.append([current])
+		current_node = Node([[], init], None, tickets)
+		openset = list() #set of nodes to explore
+		openset.append([current_node])
+		
 		while maxDistance != -1:
-			length = len(openset)
-			while length:
+			n_nodes_to_explore = len(openset)
+			while n_nodes_to_explore:
 				for child in self.neighbors(openset[0][-1].getIndex()):
 					if(self.matrix[child[1]][goal] <= maxDistance or child[1] == goal):
 						newNode = Node([child[0], child[1]], openset[0][-1], tickets)
-						newList = openset[0].copy()	
-						newList.append(newNode)
-						openset.append(newList)
-				length-= 1
+						new_node_list = openset[0].copy()	
+						new_node_list.append(newNode)
+						openset.append(new_node_list)
+				n_nodes_to_explore -= 1
 				openset.remove(openset[0])
 			maxDistance -= 1
 		return openset
 
 	def detectCollisions(self, copspathList, tickets):
+		prod = product(copspathList[i] for i in range(len(copspathList)))
+		prod2 = product(copspathList[0], copspathList[1], copspathList[2])	
+		print(prod)
+		print(prod2)
+
 		for lst in product(copspathList[0], copspathList[1], copspathList[2]):
 			flag_collisions = 1
 			newTickets = tickets.copy()
@@ -163,39 +123,11 @@ class SearchProblem:
 		tickets[transport] -= 1
 		return tickets
 
-	#will be able to remove when 3_4 code working for 1_2
-	def heuristic(self, goal, node):
-
-		h2 = self.calculateH2(node.getTransport())
-		h3 = self.calculateH3(goal, node.getIndex())
-		
-		return h2 + h3
-
-	def calculateH2(self, node):
-		if(node == 0): 
-			return 3
-		elif(node == 1):
-			return 2
-		else:
-			return 1
-	
-	def calculateH3(self, goal, node):
-		x1 = self.auxheur[node - 1][0]
-		x2 = self.auxheur[goal - 1][0]
-		y1 = self.auxheur[node - 1][1]
-		y2 = self.auxheur[goal - 1][1]
-		return math.sqrt((x2 - x1)**2 + (y2-y1)**2) / 120
-
-
 class Node:
 
 	def __init__(self, transport_index, father, tickets):
 		self.transport_index = transport_index
 		self.father = father
-		self.tickets = tickets.copy() #after 1 and 2 are in 3_4 it can be gone
-		
-		self.g = 0
-		self.h = 0
 	
 	def __repr__(self):
 		return str(self.transport_index[1])
@@ -212,9 +144,6 @@ class Node:
 	def getTransport(self):
 		return self.transport_index[0]
 
-	def reduceTickets(self, transport):
-		self.tickets[transport] -= 1
-
 
 
 def floydWarshall(model):
@@ -225,7 +154,6 @@ def floydWarshall(model):
 		path_deep.append([])
 		for j in range(len(model)):
 			path_deep[i].append(math.inf) 
-	
 	
 	#insert depth of all connections in matrix
 	for i in range(len(model)):
