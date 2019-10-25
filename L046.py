@@ -31,7 +31,7 @@ class SearchProblem:
 				possible_goals = list(permutations(self.goal))
 				for current_goals in possible_goals:
 					final_list_of_possibilities.append(self.a_star(init, self.model, current_goals, tickets, self.matrix, limitdepth, anyorder))
-				return self.choosef(final_list_of_possibilities)
+				return self.choose_final(final_list_of_possibilities)
 
 			else: #3,4
 				return self.a_star(init, self.model, self.goal, tickets, self.matrix, limitdepth, anyorder)
@@ -157,7 +157,7 @@ class SearchProblem:
 		tickets[transport] -= 1
 		return tickets
 
-	def choosef_final(self, paths):
+	def choose_final(self, paths):
 		return min(paths, key = len)
 
 class Node:
@@ -184,23 +184,21 @@ class Node:
 
 
 def floydWarshall(model):
-	path_deep = []
+	#path_deep = []
 
 	#initialize matrix
-	for i in range(len(model)):
-		path_deep.append([])
-		for j in range(len(model)):
-			path_deep[i].append(math.inf) 
-	
+    path_deep = [[math.inf for _ in range(len(model))] for _ in range(len(model))]
+    
 	#insert depth of all connections in matrix
-	for i in range(len(model)):
-		for j in range(len(model[i])):
-			path_deep[i][model[i][j][1]] = 1
-	
-	for k in range(len(model)):
-		for i in range(len(model)):
-			for j in range(len(model)):
-				if path_deep[i][k] + path_deep[k][j] < path_deep[i][j]:  
-					path_deep[i][j] = path_deep[i][k] + path_deep[k][j] 
+    for i in range(len(model)):
+        for j in range(len(model[i])):
+            path_deep[i][model[i][j][1]] = 1
 
-	return path_deep
+	
+    for k in range(len(model)):
+        for i in range(len(model)):
+            for j in range(len(model)):
+                if path_deep[i][k] + path_deep[k][j] < path_deep[i][j]: 
+                    path_deep[i][j] = path_deep[i][k] + path_deep[k][j] 
+    
+    return path_deep
