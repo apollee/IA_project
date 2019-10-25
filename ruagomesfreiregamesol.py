@@ -1,8 +1,7 @@
 import math
 import pickle
 import time
-from itertools import product
-
+from itertools import product, permutations
 
 class SearchProblem:
 
@@ -19,30 +18,43 @@ class SearchProblem:
 	def search(self, init, limitexp = 2000):
 		g_cost = 0 
 
-	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf]):
+	def search(self, init, limitexp = 2000, limitdepth = 10, tickets = [math.inf,math.inf,math.inf], anyorder = False):
 		
-		if(len(init) == 1):
-			print("not doing it rn")
-			#return self.a_star_3_4(init, self.model, self.goal, tickets, self.matrix, limitdepth)
-		elif(len(init) == 3):
-			return self.a_star_3_4(init, self.model, self.goal, tickets, self.matrix, limitdepth)
+		if(len(init) == 1): #exercise 1 and 2
+			return self.a_star(init, self.model, self.goal, tickets, self.matrix, limitdepth, anyorder)
+
+		elif(len(init) == 3): #exercise 3,4 and 5
+			if(anyorder): #5
+				final_list_of_possibilities = []
+				possible_goals = list(permutations(self.goal))
+				for current_goals in possible_goals:
+					final_list_of_possibilities.append(self.a_star(init, self.model, current_goals, tickets, self.matrix, limitdepth, anyorder))
+				return self.choosef(final_list_of_possibilities)
+
+			else: #3,4
+				return self.a_star(init, self.model, self.goal, tickets, self.matrix, limitdepth, anyorder)
 		else:
 			return []
 
-	def a_star_3_4(self, init, model, goal, tickets, matrix, max_depth):
-		depth_to_explore = max(matrix[init[i]][goal[i]] for i in range(len(init))) #allow more than one cop
+	def a_star(self, init, model, goal, tickets, matrix, max_depth, anyorder):
+		depth_to_explore = max(matrix[init[i]][goal[i]] for i in range(len(init))) 
 
 		while depth_to_explore < max_depth:
 			cops_path = []
 			for i in range(len(init)):
 				cops_path.append((self.calculatePath(depth_to_explore-1, init[i], goal[i], tickets)))
-			
+		
 			#check if there is a valid solution with current_node depth
 			if [] not in cops_path:
-				solution_path = self.detectCollisions(cops_path, tickets)
-				if len(solution_path) > 0: #found valid solution
-					return self.createAnswer(solution_path)
-			
+				if len(init) == 1:
+					solution_path = self.validatePathOneCop(cops_path, tickets)
+					if len(solution_path) > 0:
+						return self.createAnswer_1_2(solution_path)
+				else:
+					solution_path = self.detectCollisions(cops_path, tickets)
+					if len(solution_path) > 0: #found valid solution
+						return self.createAnswer_3_4_5(solution_path)
+		
 			#increase depth if no solution found
 			depth_to_explore += 1
 		
@@ -50,7 +62,7 @@ class SearchProblem:
 	
 	def calculatePath(self, maxDistance, init, goal, tickets):
 		current_node = Node([[], init], None, tickets)
-		openset = list() #set of nodes to explore
+		openset = list() #list of nodes to explore
 		openset.append([current_node])
 		
 		while maxDistance != -1:
@@ -66,35 +78,40 @@ class SearchProblem:
 				openset.remove(openset[0])
 			maxDistance -= 1
 		return openset
+	
+	def validatePathOneCop(self, cops_path, tickets):
+		for path in cops_path[0]:
+			newTickets = tickets.copy()
+			for i in range(len(path)):
+				if(path[i].getTransport() != []):
+					newTickets = self.reduceTickets(path[i].getTransport(), newTickets)
+			if(self.checkTickets(newTickets)):
+				return path				
+		return []		
 
 	def detectCollisions(self, copspathList, tickets):
-		prod = product(copspathList[i] for i in range(len(copspathList)))
-		prod2 = product(copspathList[0], copspathList[1], copspathList[2])	
-		print(prod)
-		print(prod2)
-
-		for lst in product(copspathList[0], copspathList[1], copspathList[2]):
-			flag_collisions = 1
-			newTickets = tickets.copy()
-			for j in range(len(lst[0])):
-				if lst[0][j].getIndex() == lst[1][j].getIndex():
-					flag_collisions = 0
+		for combinations in product(copspathList[0], copspathList[1], copspathList[2]):
+			flag = 1
+			currentTickets = tickets.copy()
+			for j in range(len(combinations[0])):
+				if combinations[0][j].getIndex() == combinations[1][j].getIndex():
+					flag = 0
 					break
-				if lst[0][j].getIndex() == lst[2][j].getIndex():
-					flag_collisions = 0
+				if combinations[0][j].getIndex() == combinations[2][j].getIndex():
+					flag = 0
 					break 
-				if lst[1][j].getIndex() == lst[2][j].getIndex():
-					flag_collisions = 0
+				if combinations[1][j].getIndex() == combinations[2][j].getIndex():
+					flag = 0
 					break
-				if(lst[0][j].getTransport() != []):
-					newTickets = self.reduceTickets(lst[0][j].getTransport(), newTickets)
-					newTickets = self.reduceTickets(lst[1][j].getTransport(), newTickets)
-					newTickets = self.reduceTickets(lst[2][j].getTransport(), newTickets)
-				if(not self.checkTickets(newTickets)):
-					flag_collisions = 0	
+				if(combinations[0][j].getTransport() != []):
+					currentTickets = self.reduceTickets(combinations[0][j].getTransport(), currentTickets)
+					currentTickets = self.reduceTickets(combinations[1][j].getTransport(), currentTickets)
+					currentTickets = self.reduceTickets(combinations[2][j].getTransport(), currentTickets)
+				if(not self.checkTickets(currentTickets)):
+					flag = 0	
 					break
-			if(flag_collisions and self.checkTickets(newTickets)):
-				return lst
+			if(flag and self.checkTickets(currentTickets)):
+				return combinations
 		return []
 
 	def checkTickets(self, tickets):
@@ -103,14 +120,14 @@ class SearchProblem:
 				return False
 		return True
 
-	def createAnswer(self, list_nodes):
+	def createAnswer_3_4_5(self, list_nodes):
 		final_list = []
 		for i in range(len(list_nodes[0])):
 			list_for_onepath = []
 			list_indexes = []
 			list_transports = []
 			for j in range(len(list_nodes)):
-				if(i != 0):
+				if(i != 0): #for the first case
 					list_transports.append(list_nodes[j][i].getTransport())
 				list_indexes.append(list_nodes[j][i].getIndex())
 			list_for_onepath.append(list_transports)
@@ -118,10 +135,28 @@ class SearchProblem:
 			final_list.append(list_for_onepath)
 
 		return final_list
+
+	def createAnswer_1_2(self, path_list):
+		final_list = []
+		for i in range(len(path_list)):
+			list_for_onepath = []
+			list_transport = []
+			list_index = []
+			if(i != 0): #for the first case
+				list_transport.append(path_list[i].getTransport())
+			list_index.append(path_list[i].getIndex())
+			list_for_onepath.append(list_transport)
+			list_for_onepath.append(list_index)
+			final_list.append(list_for_onepath)
+
+		return final_list
 	
 	def reduceTickets(self, transport, tickets):
 		tickets[transport] -= 1
 		return tickets
+
+	def choosef_final(self, paths):
+		return min(paths, key = len)
 
 class Node:
 

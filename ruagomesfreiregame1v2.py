@@ -123,9 +123,9 @@ else:
 
 print("\n(6 val) Exercise 3 - Three agents, No limits (test 2)")
 print("Init [30,40,109] Goal [61,60,71]")
-SP = SearchProblem(goal = [30,40,109], model = U, auxheur=coords)
+SP = SearchProblem(goal = [61,60,71], model = U, auxheur=coords)
 tinit = time.process_time()
-I = [61,60,71]
+I = [30,40,109]
 nn = SP.search(I,limitexp = 2000)
 tend = time.process_time()
 print("%.1fms"%((tend-tinit)*1000))
@@ -139,9 +139,9 @@ else:
     
 print("\n(4 val) Exercise 4 - Three agents, Limits")
 print("Init [30,40,109] Goal [63,61,70]")
-SP = SearchProblem(goal = [30,40,109], model = U, auxheur=coords)
+SP = SearchProblem(goal = [63,61,70], model = U, auxheur=coords)
 tinit = time.process_time()
-I = [61,60,71]
+I = [30,40,109]
 nn = SP.search(I,limitexp = 3000, limitdepth = 10, tickets = [5,20,2])
 tend = time.process_time()
 print("%.1fms"%((tend-tinit)*1000))
@@ -151,7 +151,7 @@ if validatepath(nn,I,U, tickets = [5,20,2]):
         plotpath(nn,coords)
 else:
         print("invalid path")
-"""
+
 print("\n(4 val) Exercise 5 - Three agents, Limits, Any-Order")
 print("Init [30,40,109] Goal [63,61,70]")
 SP = SearchProblem(goal = [63,61,70], model = U, auxheur=coords)
@@ -168,6 +168,6 @@ else:
         print("invalid path")
         
 tendtotal = time.process_time()
-print("Total time %.1fms"%((tendtotal-tinittotal)*1000))"""
+print("Total time %.1fms"%((tendtotal-tinittotal)*1000))
 
 
