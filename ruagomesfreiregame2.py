@@ -78,7 +78,7 @@ for nrep in range(0,NREP):
         val[1] += Jn
         print("average reward",Jn)
 
-"""print("exemplo 2")
+print("exemplo 2")
 for nrep in range(0,NREP):
         
         A = LearningAgent(114,15)
@@ -88,7 +88,6 @@ for nrep in range(0,NREP):
         R[10] = 1
         # T contains the list of possible next states
         # T[14][0] - contains the possible next states of state 14
-
 
         print("# learning phase")
         # in this phase your agent will learn about the world
@@ -105,7 +104,8 @@ for nrep in range(0,NREP):
         print("# testing phase")
         Jn = runagent(A, T, R, I = 1, learningphase=False, ntest = 10)
         val[3] += Jn
-        print("average reward",Jn)   """     
+        print("average reward",Jn)
+print(A.tableF)
 
 
 val = list([ii/NREP for ii in val])

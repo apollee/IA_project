@@ -14,10 +14,10 @@ class LearningAgent:
                 # define this function
                 self.nS = nS
                 self.nA = nA
-                self.gamma =  0.75
+                self.gamma =  0.5
                 self.alpha = 0.5
                 self.tableQ = [[0 for i in range(nA)] for i in range(nS)]
-                self.tableF = [[-inf for i in range(nA)] for i in range(nS)]
+                self.tableF = [[-2 for i in range(nA)] for i in range(nS)]
                 
                 # define this function
               
@@ -30,15 +30,14 @@ class LearningAgent:
         # a - the index to the action in aa
         def selectactiontolearn(self,st,aa):
                 min_value = inf
-                counter = 0
-                for i in aa:
+
+                for i in range(len(aa)):
                     if(min_value > self.tableF[st][i]):
                         min_value = self.tableF[st][i]
-                        a = [i, counter]
-                    counter += 1
+                        j = i
 
-                self.tableF[st][a[0]] += 1
-                return a[1]
+                self.tableF[st][j] += 1
+                return j
 
         # Select one action, used when evaluating
         # st - is the current state        
@@ -47,18 +46,15 @@ class LearningAgent:
         # returns
         # a - the index to the action in aa
         def selectactiontoexecute(self,st,aa):
+                # define this function
                 max_value = -inf
-                counter = 0
 
-                for i in aa:
+                for i in range(len(aa)):
                         if(max_value < self.tableQ[st][i]):
                                 max_value = self.tableQ[st][i]
-                                index = counter
-                                a = [i, counter]
-                        counter += 1
+                                j = i
 
-                return a[1]
-                
+                return j
 
 
         # this function is called after every action
@@ -68,5 +64,6 @@ class LearningAgent:
         # r - reward obtained
         def learn(self,st,nst,a,r):
                 # define this function
-                self.tableQ[st][a] = self.tableQ[st][a] + self.alpha * (r + self.gamma * max(self.tableQ[nst]) - self.tableQ[st][a])
+                self.tableQ[st][a] = self.tableQ[st][a] + self.alpha * (r + self.gamma * max(self.tableQ[nst]) 
+                - self.tableQ[st][a])
                 return 
