@@ -1,4 +1,5 @@
 import random
+from math import inf 
 
 # LearningAgent to implement
 # no knowledeg about the environment can be used
@@ -13,20 +14,10 @@ class LearningAgent:
                 # define this function
                 self.nS = nS
                 self.nA = nA
-                self.gamma =  10
-                self.lr = 5
-                self.tableQ = [[0] * nA for i in range(nS)]
-
-                for i in range(len(nS)):
-                        for j in range(len(nA)):
-                                print(tableQ[i][j])
-
-                for i in range(len(nS)):
-                        for j in range(len(nA)):
-                                tableQ[i][j] = 0
-                                print(tableQ[i][j])
-                
-
+                self.gamma =  0.75
+                self.alpha = 0.5
+                self.tableQ = [[0 for i in range(nA)] for i in range(nS)]
+                self.tableF = [[-inf for i in range(nA)] for i in range(nS)]
                 
                 # define this function
               
@@ -38,12 +29,16 @@ class LearningAgent:
         # returns
         # a - the index to the action in aa
         def selectactiontolearn(self,st,aa):
-                # define this function
-                # print("select one action to learn better")
+                min_value = inf
+                counter = 0
+                for i in aa:
+                    if(min_value > self.tableF[st][i]):
+                        min_value = self.tableF[st][i]
+                        a = [i, counter]
+                    counter += 1
 
-                a = 0
-                # define this function
-                return a
+                self.tableF[st][a[0]] += 1
+                return a[1]
 
         # Select one action, used when evaluating
         # st - is the current state        
@@ -52,10 +47,18 @@ class LearningAgent:
         # returns
         # a - the index to the action in aa
         def selectactiontoexecute(self,st,aa):
-                # define this function
-                a = 0
-                # print("select one action to see if I learned")
-                return a
+                max_value = -inf
+                counter = 0
+
+                for i in aa:
+                        if(max_value < self.tableQ[st][i]):
+                                max_value = self.tableQ[st][i]
+                                index = counter
+                                a = [i, counter]
+                        counter += 1
+
+                return a[1]
+                
 
 
         # this function is called after every action
@@ -63,8 +66,7 @@ class LearningAgent:
         # nst - next state
         # a - the index to the action taken
         # r - reward obtained
-        def learn(self,ost,nst,a,r):
+        def learn(self,st,nst,a,r):
                 # define this function
-                #print("learn something from this data")
-                
-                return
+                self.tableQ[st][a] = self.tableQ[st][a] + self.alpha * (r + self.gamma * max(self.tableQ[nst]) - self.tableQ[st][a])
+                return 

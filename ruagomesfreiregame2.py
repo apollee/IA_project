@@ -78,7 +78,7 @@ for nrep in range(0,NREP):
         val[1] += Jn
         print("average reward",Jn)
 
-print("exemplo 2")
+"""print("exemplo 2")
 for nrep in range(0,NREP):
         
         A = LearningAgent(114,15)
@@ -105,7 +105,7 @@ for nrep in range(0,NREP):
         print("# testing phase")
         Jn = runagent(A, T, R, I = 1, learningphase=False, ntest = 10)
         val[3] += Jn
-        print("average reward",Jn)        
+        print("average reward",Jn)   """     
 
 
 val = list([ii/NREP for ii in val])
