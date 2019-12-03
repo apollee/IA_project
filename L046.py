@@ -1,3 +1,5 @@
+#Grupo 46; 89526 - Pedro Lamego; 89498 - Beatriz Martins 
+
 import random
 from math import inf 
 
