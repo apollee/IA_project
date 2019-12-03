@@ -11,17 +11,14 @@ class LearningAgent:
         # nA maximum number of action per state
         def __init__(self,nS,nA):
 
-                # define this function
                 self.nS = nS
                 self.nA = nA
-                self.gamma =  0.5
-                self.alpha = 0.5
+                self.gamma =  0.5 
+                self.alpha = 0.75 
                 self.tableQ = [[0 for i in range(nA)] for i in range(nS)]
-                self.tableF = [[-2 for i in range(nA)] for i in range(nS)]
-                
-                # define this function
-              
-        
+                self.tableF = [[0 for i in range(nA)] for i in range(nS)]              
+                self.available_aa = [nA for i in range(nS)]
+
         # Select one action, used when learning  
         # st - is the current state        
         # aa - is the set of possible actions
@@ -30,12 +27,13 @@ class LearningAgent:
         # a - the index to the action in aa
         def selectactiontolearn(self,st,aa):
                 min_value = inf
-
+                   
                 for i in range(len(aa)):
                     if(min_value > self.tableF[st][i]):
                         min_value = self.tableF[st][i]
                         j = i
-
+                
+                self.available_aa[st] = i
                 self.tableF[st][j] += 1
                 return j
 
@@ -46,9 +44,8 @@ class LearningAgent:
         # returns
         # a - the index to the action in aa
         def selectactiontoexecute(self,st,aa):
-                # define this function
                 max_value = -inf
-
+                j = 0
                 for i in range(len(aa)):
                         if(max_value < self.tableQ[st][i]):
                                 max_value = self.tableQ[st][i]
@@ -63,7 +60,5 @@ class LearningAgent:
         # a - the index to the action taken
         # r - reward obtained
         def learn(self,st,nst,a,r):
-                # define this function
-                self.tableQ[st][a] = self.tableQ[st][a] + self.alpha * (r + self.gamma * max(self.tableQ[nst]) 
-                - self.tableQ[st][a])
+                self.tableQ[st][a] = self.tableQ[st][a] + self.alpha * (r + self.gamma * max(self.tableQ[nst][:self.available_aa[nst]]) - self.tableQ[st][a])
                 return 
